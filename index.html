@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Precios</title>
+    <title>Simulador de Precios en Ofertas</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -21,14 +21,16 @@
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
-        input[type="number"] {
+        .input-group input {
             padding: 10px;
             font-size: 16px;
             border: 1px solid #ced4da;
             border-radius: 4px;
+            margin-bottom: 10px;
         }
-        button {
+        .input-group button {
             padding: 10px 20px;
             font-size: 16px;
             color: #fff;
@@ -36,13 +38,14 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            margin-bottom: 10px;
         }
-        button:hover {
+        .input-group button:hover {
             background-color: #0056b3;
         }
         table {
             width: 100%;
-            max-width: 600px;
+            max-width: 800px;
             border-collapse: collapse;
             margin-top: 20px;
         }
@@ -58,71 +61,161 @@
         tr:nth-child(even) {
             background-color: #f2f2f2;
         }
-        .clear-btn {
-            background-color: #dc3545;
+        .warning {
+            background-color: #ffcccc !important;
+        }        
+        .done-btn {            
+            background-color: #1bbb21 !important;
+        }
+        .done-btn:hover {
+            background-color: #087e06 !important;
+        }
+        .clear-btn {            
+            background-color: #dc3545 !important;
         }
         .clear-btn:hover {
-            background-color: #c82333;
+            background-color: #c82333 !important;
         }
+        .disabled {
+            background-color: #6c757d !important;
+            cursor: not-allowed;
+        }
+        .warning-text {
+            color: #721c24;
+            font-weight: bold;
+        }        
     </style>
 </head>
 <body>
-    <h1>Gestión de Precios</h1>
+    <h1>Simulador de Precios en Ofertas</h1>
     <div class="input-group">
-        <input type="number" id="priceInput" placeholder="Ingrese un precio">
-        <button onclick="addPrice()">Agregar Precio</button>
+        <input type="number" id="standardPriceInput" placeholder="Standard">
+        <input type="number" id="tachadoPriceInput" placeholder="Tachado">
+        <input type="number" id="meliPriceInput" placeholder="Meli">
+        <input type="number" id="sellerPriceInput" placeholder="Seller">
+        <button id="createOfferButton" class="done-btn" onclick="createOffer()">Crear Oferta</button>
         <button class="clear-btn" onclick="clearData()">Limpiar Datos</button>
     </div>
-    <table id="priceTable">
+    <div class="input-group">
+        <input type="number" id="newStandardPriceInput" placeholder="Nuevo Standard">
+        <button id="updatePriceButton" onclick="updatePrice()" class="disabled" disabled>Actualizar Precio</button>
+    </div>
+    <table id="offerTable">
         <thead>
             <tr>
-                <th>Precio</th>
+                <th>Standard</th>
+                <th>Tachado</th>
+                <th>Meli</th>
+                <th>Seller</th>
                 <th>Precio Final</th>
+                <th>Advertencia</th>
             </tr>
         </thead>
         <tbody>
-            <!-- Las filas de precios se añadirán aquí -->
+            <!-- Las filas de ofertas se añadirán aquí -->
         </tbody>
     </table>
 
     <script>
-        // Fórmula para calcular el precio final
-        function calculateFinalPrice(price) {
-            // Ejemplo: agregar un 10% de IVA
-            return price * 1.10;
-        }
+        let offerCreated = false;
+        let initialOffer = {};
 
-        function addPrice() {
-            const priceInput = document.getElementById('priceInput');
-            const price = parseFloat(priceInput.value);
+        function createOffer() {
+            if (offerCreated) return;
 
-            if (isNaN(price)) {
-                alert('Por favor, ingrese un precio válido');
+            const standardPrice = parseFloat(document.getElementById('standardPriceInput').value);
+            const tachadoPrice = parseFloat(document.getElementById('tachadoPriceInput').value);
+            const meliPrice = parseFloat(document.getElementById('meliPriceInput').value);
+            const sellerPrice = parseFloat(document.getElementById('sellerPriceInput').value);
+
+            if (isNaN(standardPrice) || isNaN(tachadoPrice) || isNaN(meliPrice) || isNaN(sellerPrice)) {
+                alert('Por favor, ingrese todos los precios válidos');
                 return;
             }
 
-            const finalPrice = calculateFinalPrice(price);
-            const tableBody = document.querySelector('#priceTable tbody');
+            if (tachadoPrice <= meliPrice + sellerPrice) {
+                alert('Los valores ingresados son erroneos');
+                return;
+            }
 
-            const row = document.createElement('tr');
 
-            const priceCell = document.createElement('td');
-            priceCell.textContent = price.toFixed(2);
-            row.appendChild(priceCell);
-
-            const finalPriceCell = document.createElement('td');
-            finalPriceCell.textContent = finalPrice.toFixed(2);
-            row.appendChild(finalPriceCell);
-
-            tableBody.appendChild(row);
-
-            // Limpiar el campo de entrada después de agregar el precio
-            priceInput.value = '';
+            initialOffer = { standard: standardPrice, tachado: tachadoPrice, meli: meliPrice, seller: sellerPrice, final: tachadoPrice - meliPrice - sellerPrice };
+            addRowToTable(initialOffer);
+            offerCreated = true;
+            document.getElementById('createOfferButton').disabled = true;
+            const updatePriceButton = document.getElementById('updatePriceButton');
+            updatePriceButton.disabled = false;
+            updatePriceButton.classList.remove('disabled');
         }
 
         function clearData() {
-            const tableBody = document.querySelector('#priceTable tbody');
+            const tableBody = document.querySelector('#offerTable tbody');
             tableBody.innerHTML = '';
+            offerCreated = false;
+            document.getElementById('createOfferButton').disabled = false;
+            const updatePriceButton = document.getElementById('updatePriceButton');
+            updatePriceButton.disabled = true;
+            updatePriceButton.classList.add('disabled');
+            initialOffer = {};
+            document.getElementById('standardPriceInput').value = "";
+            document.getElementById('tachadoPriceInput').value = "";
+            document.getElementById('meliPriceInput').value = "";
+            document.getElementById('sellerPriceInput').value = "";
+            document.getElementById('newStandardPriceInput').value = "";
+        }
+
+        function updatePrice() {
+            if (!offerCreated) return;
+
+            const newStandardPrice = parseFloat(document.getElementById('newStandardPriceInput').value);
+
+            if (isNaN(newStandardPrice)) {
+                alert('Por favor, ingrese un nuevo precio standard válido');
+                return;
+            }
+
+            if (newStandardPrice <= initialOffer.tachado - initialOffer.meli - initialOffer.seller) {
+                //SE BORRA LA OFERTA
+                addRowToTable({ ...initialOffer, standard: newStandardPrice }, true); // Add warning row
+                // Deshabilitar actualizaciones adicionales
+                const updatePriceButton = document.getElementById('updatePriceButton');
+                updatePriceButton.disabled = true;
+                updatePriceButton.classList.add('disabled');
+            } else {
+                if (newStandardPrice < initialOffer.tachado - initialOffer.seller) {
+                    initialOffer.seller = 0;
+                    initialOffer.tachado = newStandardPrice;
+                    initialOffer.meli = newStandardPrice - initialOffer.final;
+                }
+                initialOffer.standard = newStandardPrice;
+                addRowToTable(initialOffer);
+            }
+        }
+
+        function addRowToTable(offer, warning = false) {
+            const tableBody = document.querySelector('#offerTable tbody');
+            const row = document.createElement('tr');
+
+            if (warning) {
+                row.classList.add('warning');
+            }
+
+            Object.keys(offer).forEach(key => {
+                const cell = document.createElement('td');
+                cell.textContent = offer[key].toFixed(2);
+                row.appendChild(cell);
+            });
+
+            tableBody.appendChild(row);
+
+            const warningCell = document.createElement('td');
+            if (warning) {
+                row.classList.add('warning');
+                warningCell.classList.add('warning-text');
+                warningCell.textContent = "¡Oferta eliminada!";
+            }
+            row.appendChild(warningCell);
+
         }
     </script>
 </body>

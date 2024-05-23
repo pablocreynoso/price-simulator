@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Precios</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #343a40;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input[type="number"] {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            max-width: 600px;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .clear-btn {
+            background-color: #dc3545;
+        }
+        .clear-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gestión de Precios</h1>
+    <div class="input-group">
+        <input type="number" id="priceInput" placeholder="Ingrese un precio">
+        <button onclick="addPrice()">Agregar Precio</button>
+        <button class="clear-btn" onclick="clearData()">Limpiar Datos</button>
+    </div>
+    <table id="priceTable">
+        <thead>
+            <tr>
+                <th>Precio</th>
+                <th>Precio Final</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Las filas de precios se añadirán aquí -->
+        </tbody>
+    </table>
+
+    <script>
+        // Fórmula para calcular el precio final
+        function calculateFinalPrice(price) {
+            // Ejemplo: agregar un 10% de IVA
+            return price * 1.10;
+        }
+
+        function addPrice() {
+            const priceInput = document.getElementById('priceInput');
+            const price = parseFloat(priceInput.value);
+
+            if (isNaN(price)) {
+                alert('Por favor, ingrese un precio válido');
+                return;
+            }
+
+            const finalPrice = calculateFinalPrice(price);
+            const tableBody = document.querySelector('#priceTable tbody');
+
+            const row = document.createElement('tr');
+
+            const priceCell = document.createElement('td');
+            priceCell.textContent = price.toFixed(2);
+            row.appendChild(priceCell);
+
+            const finalPriceCell = document.createElement('td');
+            finalPriceCell.textContent = finalPrice.toFixed(2);
+            row.appendChild(finalPriceCell);
+
+            tableBody.appendChild(row);
+
+            // Limpiar el campo de entrada después de agregar el precio
+            priceInput.value = '';
+        }
+
+        function clearData() {
+            const tableBody = document.querySelector('#priceTable tbody');
+            tableBody.innerHTML = '';
+        }
+    </script>
+</body>
+</html>
